@@ -1,15 +1,30 @@
 #include "graficos.h"
 #include <QPainter>
-#include <cmath>
+#include <QLabel>
+#include <QMainWindow>
+#include <QtGui>
 #include <iostream>
 
 using namespace std;
 
-Graficos::Graficos(QWidget *parent)
-    : QWidget(parent)
+Graficos::Graficos()
+    :QMainWindow()
+
 {
-centrox = 200;
-centroy = 200;
+    label = new QLabel(this);
+    imagen = QImage(400,400, QImage::Format_ARGB32);
+    imagen.fill(Qt::white);//fondo blanco
+    setCentralWidget(label);
+    centrox = 200;
+    centroy = 200;
+
+    fuerzaBrutaCirculo(67);
+    puntoMedioCirculo(80);
+
+    cuatro_conexa(1,1,Qt::red, Qt::white);
+
+    render();
+
 }
 
 Graficos::~Graficos()
@@ -17,72 +32,40 @@ Graficos::~Graficos()
 
 }
 
-void Graficos::plano(){
+void Graficos::render(){
 
-    QPainter qp(this);
-    QPen pen(Qt::black, 1, Qt::SolidLine);
-    qp.setPen(pen);
-    qp.drawLine(centrox,centroy,200,0);
-    qp.drawLine(centrox,centroy,0,200);
-    qp.drawLine(centrox,centroy,400,200);
-    qp.drawLine(centrox,centroy,200,400);
+    label->setPixmap(QPixmap::fromImage(imagen));
+    label->show();
 
-}
-
-
-
-void Graficos::paintEvent(QPaintEvent *e)
-{
-    Q_UNUSED(e);
-
-    plano();
-    fuerzaBrutaCirculo(40);
-    puntoMedioCirculo(70);
-    dda(0,0,100,100);
-    ddaSimetrico(-10,50,100,100);
-    ddaSimetrico(20,-80,30,100);
 }
 
 
 void Graficos::dibujar_pixel(int x, int y){
 
-    QPainter qp(this);
-    QPen pen(Qt::black, 1, Qt::SolidLine);
-    qp.setPen(pen);
-
-    if(x<0 && y>0)
-    {
-
-        x = centrox - abs(x);
-        y = centroy - abs(y);
-
-    }
-    else if(x>0 && y>0)
-    {
-        x = centrox + abs(x);
-        y = centroy - abs(y);
-
-    }
-    else if(x<0 && y<0)
-    {
-
-        x = centrox - abs(x);
-        y = centroy + abs(y);
-    }
-    else if(x>0 && y<0)
-    {
+    if(x >=0){
 
         x = centrox + abs(x);
-        y = centroy + abs(y);
+
+    }else if(x < 0){
+
+        x = centrox - abs(x);
+    }
+
+    if(y >= 0){
+
+        y = centroy - abs(y);
+
+    }else if(y < 0){
+
+        y = centrox + abs(y);
     }
 
 
 
 
-    qp.drawPoint(x,y);
-
-
-
+    p.begin(&imagen);
+    p.drawPoint(x, y); //dibujo el punto
+    p.end();
 
 
 }
@@ -91,6 +74,7 @@ void Graficos::dibujar_pixel(int x, int y){
 void Graficos::fuerzaBrutaCirculo(int r)
 {
     double y1,y2;
+
     for(int x=-r;x<r;x++)
     {
         y1 = sqrt((r*r) - (x*x));
@@ -117,9 +101,6 @@ void Graficos::puntos_Circulo(int x, int y)
 }
 
 
-
-
-
 void Graficos::puntoMedioCirculo(int r)
 {
     int x,y,d;
@@ -134,7 +115,9 @@ void Graficos::puntoMedioCirculo(int r)
         {
             d = d + 2*x + 3;
             x = x + 1;
-        }else
+
+        }
+        else
         {
             d = d + 2*(x-y) + 5;
             x = x + 1;
@@ -148,41 +131,60 @@ void Graficos::puntoMedioCirculo(int r)
 }
 
 
-void Graficos::fuerzaBrutaLinea(int x1,int y1,int x2,int y2)
+void Graficos::fuerzaBrutaLinea(int _x1,int _y1,int _x2,int _y2)
 {
-    double y;
-    double m = (y1 - y2)/(x1 - x2); //pendiente
-    double b = y1 - (m * x1);       //interseccion con y
 
-    for(int x=x1;x<x2;x++)
+
+    double x1,x2,y1,y2 ;
+    x1 = (double)_x1;
+    x2 = (double)_x2;
+    y1 = (double)_y1;
+    y2 = (double)_y2;
+
+    double y = 0, m = 0, b = 0;
+    m = (y2 - y1)/(x2 - x1); //pendiente
+    b = y1 - (m * x1);       //interseccion con y
+
+    for(int x=_x1;x<_x2;x++)
     {
-        y = m * x + b;
+        y = ( m * x )+ b;
+
         dibujar_pixel(x , (int)round(y) );
+
     }
 }
 
 
-void Graficos::dda(int x1,int y1,int x2,int y2)
+void Graficos::dda(int _x1,int _y1,int _x2,int _y2)
 {
-    double y =(double) y1;
-    double m = (y1 - y2)/(x1 - x2);
 
-    for(int x=x1;x<x2;x++){
+    double x1,x2,y1,y2 ;
+    x1 = (double)_x1;
+    x2 = (double)_x2;
+    y1 = (double)_y1;
+    y2 = (double)_y2;
 
-    y = y + m;
-    dibujar_pixel(x, (int)round(y));
+
+    double y = y1;
+    double m = (y2 - y1)/(x2 - x1);
+
+    for(int x=_x1;x<_x2;x++){
+
+        y = y + m;
+        dibujar_pixel(x, (int)round(y));
 
     }
-
-
 
 }
 
 
 void Graficos::ddaSimetrico(int x1,int y1,int x2,int y2)
 {
+
+
     int d;
     double dx,dy,x,y;
+
 
     if(abs(x2 - x1) > abs(y2 - y1))
     {
@@ -193,16 +195,16 @@ void Graficos::ddaSimetrico(int x1,int y1,int x2,int y2)
         d = abs(y2 - y1);
     }
 
-    dx = (x2 - x1) / d ;
-    dy = (y2 - y1) / d;
-    x  = x1 + 0.5 * signo(dx);
-    y = y1 + 0.5 * signo(dy);
+    dx = (double)(x2 - x1) / d ;
+    dy = (double)(y2 - y1) / d;
+    x  = (double)x1 + 0.5 * signo(dx);
+    y = (double)y1 + 0.5 * signo(dy);
 
     for(int i=1;i<d;i++)
     {
         dibujar_pixel((int)round(x),(int)round(y));
-        x = x + dx;
-        y = y + dy;
+        x = (double)x + dx;
+        y = (double)y + dy;
         //i = i + 1;
     }
 
@@ -210,17 +212,47 @@ void Graficos::ddaSimetrico(int x1,int y1,int x2,int y2)
 }
 
 
-int Graficos::signo(double x){
+double Graficos::signo(double x){
 
     if(x<0){
 
-        return -1;
+        return -1.0;
+
     }else{
 
-        return 1;
+        return 1.0;
     }
 
 }
+
+QColor Graficos::color(int x, int y){
+
+    QColor color(imagen.pixel(x,y));
+
+    return color;
+}
+
+
+void Graficos::cuatro_conexa(int x ,int y, QColor target_color, QColor new_color){
+
+    if( color(x,y) != target_color){
+        cout<<"4-conexa"<<endl;
+        return;
+    }
+
+
+
+    new_color = target_color;
+
+    cuatro_conexa(x-1,y,target_color,new_color);
+    cuatro_conexa(x+1,y,target_color,new_color);
+    cuatro_conexa(x,y+1,target_color,new_color);
+    cuatro_conexa(x,y-1,target_color,new_color);
+    cout<<"4-conexa"<<endl;
+}
+
+
+
 
 
 
