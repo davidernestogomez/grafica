@@ -17,20 +17,21 @@ public:
     void fuerzaBrutaLinea(int x1, int y1, int x2, int y2);
     void dda(int x1, int y1, int x2, int y2);
     void ddaSimetrico(int x1, int y1, int x2, int y2);
-    void cuatro_conexa(int x ,int y, QColor colornuevo, QColor color_viejo);
-
-protected:
-    void dibujar_pixel(int x, int y);
-    QColor color(int x, int y );
+    void cuatro_conexa(int x ,int y, QColor colorn, QColor colorv);
     void render();
-    double signo(double x);
+protected:
+
+    QPoint coor(int x, int y);
+    QColor color(int x, int y );
+    void dibujar_pixel(int x, int y);
+
     void puntos_Circulo(int x, int y);
+    double signo(double x);
 
 private:
 
     QLabel *label;
     QImage imagen;
-    QPainter p;
     int centrox;
     int centroy;
 

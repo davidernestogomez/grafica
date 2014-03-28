@@ -2,7 +2,6 @@
 #include <QPainter>
 #include <QLabel>
 #include <QMainWindow>
-#include <QtGui>
 #include <iostream>
 
 using namespace std;
@@ -11,20 +10,13 @@ Graficos::Graficos()
     :QMainWindow()
 
 {
+
     label = new QLabel(this);
     imagen = QImage(400,400, QImage::Format_ARGB32);
     imagen.fill(Qt::white);//fondo blanco
     setCentralWidget(label);
     centrox = 200;
     centroy = 200;
-
-    fuerzaBrutaCirculo(67);
-    puntoMedioCirculo(80);
-
-    cuatro_conexa(1,1,Qt::red, Qt::white);
-
-    render();
-
 }
 
 Graficos::~Graficos()
@@ -39,8 +31,7 @@ void Graficos::render(){
 
 }
 
-
-void Graficos::dibujar_pixel(int x, int y){
+QPoint Graficos::coor(int x, int y){
 
     if(x >=0){
 
@@ -60,12 +51,17 @@ void Graficos::dibujar_pixel(int x, int y){
         y = centrox + abs(y);
     }
 
+return QPoint(x,y);
+
+}
 
 
+void Graficos::dibujar_pixel(int x, int y){
 
-    p.begin(&imagen);
-    p.drawPoint(x, y); //dibujo el punto
-    p.end();
+    QPainter qp;
+    qp.begin(&imagen);
+    qp.drawPoint(coor(x,y)); //dibujo el pixel
+    qp.end();
 
 
 }
@@ -205,7 +201,7 @@ void Graficos::ddaSimetrico(int x1,int y1,int x2,int y2)
         dibujar_pixel((int)round(x),(int)round(y));
         x = (double)x + dx;
         y = (double)y + dy;
-        //i = i + 1;
+
     }
 
 
@@ -227,32 +223,29 @@ double Graficos::signo(double x){
 
 QColor Graficos::color(int x, int y){
 
-    QColor color(imagen.pixel(x,y));
-
-    return color;
+    return  QColor(imagen.pixel(coor(x,y)));
 }
 
 
 void Graficos::cuatro_conexa(int x ,int y, QColor target_color, QColor new_color){
 
-    if( color(x,y) != target_color){
-        cout<<"4-conexa"<<endl;
+    QPainter qp;
+
+
+    if(color(x,y) != target_color){
+
         return;
     }
 
 
-
-    new_color = target_color;
+    qp.begin(&imagen);
+    qp.setPen(QColor(new_color));
+    qp.drawPoint(coor(x,y)); //dibujo el pixel
+    qp.end();
 
     cuatro_conexa(x-1,y,target_color,new_color);
     cuatro_conexa(x+1,y,target_color,new_color);
     cuatro_conexa(x,y+1,target_color,new_color);
     cuatro_conexa(x,y-1,target_color,new_color);
-    cout<<"4-conexa"<<endl;
+
 }
-
-
-
-
-
-
