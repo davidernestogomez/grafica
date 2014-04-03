@@ -1,8 +1,11 @@
 #include "graficos.h"
+
 #include <QPainter>
 #include <QLabel>
 #include <QMainWindow>
 #include <iostream>
+#include <QtGui>
+#define PI 3.1416
 
 using namespace std;
 
@@ -12,17 +15,24 @@ Graficos::Graficos()
 {
 
     label = new QLabel(this);
-    imagen = QImage(400,400, QImage::Format_ARGB32);
+		qp = new QPainter();    
+		imagen = QImage(400,400, QImage::Format_ARGB32);
     imagen.fill(Qt::white);//fondo blanco
     setCentralWidget(label);
     centrox = 200;
     centroy = 200;
+    
+		qp->begin(&imagen);
+
 }
 
 Graficos::~Graficos()
 {
-
+		qp->end();
 }
+
+
+
 
 void Graficos::render(){
 
@@ -58,10 +68,10 @@ return QPoint(x,y);
 
 void Graficos::dibujar_pixel(int x, int y){
 
-    QPainter qp;
-    qp.begin(&imagen);
-    qp.drawPoint(coor(x,y)); //dibujo el pixel
-    qp.end();
+    
+  
+    qp->drawPoint(coor(x,y)); //dibujo el pixel
+    
 
 
 }
@@ -229,7 +239,7 @@ QColor Graficos::color(int x, int y){
 
 void Graficos::cuatro_conexa(int x ,int y, QColor target_color, QColor new_color){
 
-    QPainter qp;
+    
 
 
     if(color(x,y) != target_color){
@@ -238,14 +248,68 @@ void Graficos::cuatro_conexa(int x ,int y, QColor target_color, QColor new_color
     }
 
 
-    qp.begin(&imagen);
-    qp.setPen(QColor(new_color));
-    qp.drawPoint(coor(x,y)); //dibujo el pixel
-    qp.end();
+    
+    qp->setPen(QColor(new_color));
+    qp->drawPoint(coor(x,y)); //dibujo el pixel
+    
 
     cuatro_conexa(x-1,y,target_color,new_color);
     cuatro_conexa(x+1,y,target_color,new_color);
     cuatro_conexa(x,y+1,target_color,new_color);
     cuatro_conexa(x,y-1,target_color,new_color);
 
+}
+
+
+
+
+
+
+void Graficos::parcial(int n, int r){
+
+    double rad=0.0,aumento_rad=0.0, x=0.0, y=0.0, antx=0.0, anty=0.0;
+	   
+	    
+		aumento_rad = (2*PI) / n ; //divido 2*PI por el numero de lados para saber tamaño en radianes
+                                                     // de cada "porcion"
+
+
+    if(n == 1){
+
+        dibujar_pixel(0,0);
+
+    }else if(n == 2){
+       
+
+        qp->drawLine(coor(r,0), coor(0, 0)); //dibujo el pixel
+       
+
+    }else{
+
+				
+        while(rad <= 2*PI)
+        {
+
+						rad = rad + aumento_rad;	//sumo a rad la "porcion"					
+						
+						x = r * cos(rad); //convierto de polares a cartesianas
+            y = r * sin(rad);	//convierto de polares a cartesianas
+						
+            qp->drawLine(coor(antx,anty), coor(x, y)); //dibujo el pixel
+
+           antx = x;
+					 anty = y;
+
+            
+            
+					
+ 				}
+
+        
+
+        qp->drawLine(coor(x,y), coor(r, 0)); //dibujo el pixel
+       	cuatro_conexa(1,1,Qt::white, Qt::yellow);
+
+
+        }
 }
